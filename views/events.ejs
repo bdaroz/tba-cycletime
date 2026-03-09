@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Events - TBA Cycle Time Analysis</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Events</h1>
+  <table class="events-table">
+    <thead>
+      <tr>
+        <th>Event Name</th>
+        <th>Avg Cycle Time (min)</th>
+        <th>Avg Referee Time (min)</th>
+        <th>Avg Schedule Diff (min)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% events.forEach(event => { %>
+        <tr>
+          <td><a href="/event/<%= event.key %>"><%= event.name %></a></td>
+          <td><%= (event.avgCycleTime / 60).toFixed(2) %></td>
+          <td><%= (event.avgRefTime / 60).toFixed(2) %></td>
+          <td><%= (event.avgScheduleDiff / 60).toFixed(2) %></td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</body>
+</html>

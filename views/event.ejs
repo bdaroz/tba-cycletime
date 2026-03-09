@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= event.name %> - TBA Cycle Time Analysis</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h1><%= event.name %></h1>
+  <p><a href="https://thebluealliance.com/event/<%= event.key %>" target="_blank">View on The Blue Alliance</a></p>
+
+  <h2>Analysis Summary</h2>
+  <p><strong>Daily Total Schedule Delta:</strong> <%= (dailyTotalScheduleDelta / 60).toFixed(2) %> minutes</p>
+
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th>Min</th>
+        <th>Avg</th>
+        <th>Max</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Cycle Time</td>
+        <td>
+          <%= (cycleStats.min.value / 60).toFixed(2) %>m
+          <% if (cycleStats.min.context) { %>
+            <br>(Match <%= cycleStats.min.context.match.match_number %>)
+          <% } %>
+        </td>
+        <td><%= (cycleStats.avg / 60).toFixed(2) %>m</td>
+        <td>
+          <%= (cycleStats.max.value / 60).toFixed(2) %>m
+          <% if (cycleStats.max.context) { %>
+            <br>(Match <%= cycleStats.max.context.match.match_number %>)
+          <% } %>
+        </td>
+      </tr>
+      <tr>
+        <td>Referee Time</td>
+        <td>
+          <%= (refStats.min.value / 60).toFixed(2) %>m
+          <% if (refStats.min.context) { %>
+            <br>(Match <%= refStats.min.context.match.match_number %>)
+          <% } %>
+        </td>
+        <td><%= (refStats.avg / 60).toFixed(2) %>m</td>
+        <td>
+          <%= (refStats.max.value / 60).toFixed(2) %>m
+          <% if (refStats.max.context) { %>
+            <br>(Match <%= refStats.max.context.match.match_number %>)
+          <% } %>
+        </td>
+      </tr>
+      <tr>
+        <td>Schedule Difference</td>
+        <td>
+          <%= (scheduleStats.min.value / 60).toFixed(2) %>m
+          <% if (scheduleStats.min.context) { %>
+            <br>(Match <%= scheduleStats.min.context.match.match_number %>)
+          <% } %>
+        </td>
+        <td><%= (scheduleStats.avg / 60).toFixed(2) %>m</td>
+        <td>
+          <%= (scheduleStats.max.value / 60).toFixed(2) %>m
+          <% if (scheduleStats.max.context) { %>
+            <br>(Match <%= scheduleStats.max.context.match.match_number %>)
+          <% } %>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Graphs</h2>
+  <canvas id="cycleChart"></canvas>
+  <canvas id="refereeChart"></canvas>
+  <canvas id="scheduleChart"></canvas>
+
+  <h2>Match Details</h2>
+  <table class="events-table">
+    <thead>
+      <tr>
+        <th>Match</th>
+        <th>Scheduled Time</th>
+        <th>Actual Time</th>
+        <th>Post Result Time</th>
+        <th>Cycle Time (min)</th>
+        <th>Referee Time (min)</th>
+        <th>Schedule Diff (min)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% matchDetails.forEach(match => { %>
+        <tr>
+          <td><%= match.match_number %></td>
+          <td><%= match.scheduled_time ? new Date(match.scheduled_time * 1000).toLocaleTimeString() : 'N/A' %></td>
+          <td><%= match.actual_time ? new Date(match.actual_time * 1000).toLocaleTimeString() : 'N/A' %></td>
+          <td><%= match.post_result_time ? new Date(match.post_result_time * 1000).toLocaleTimeString() : 'N/A' %></td>
+          <td><%= match.cycle_time ? (match.cycle_time / 60).toFixed(2) : '-' %></td>
+          <td><%= match.ref_time ? (match.ref_time / 60).toFixed(2) : '-' %></td>
+          <td><%= match.schedule_diff ? (match.schedule_diff / 60).toFixed(2) : '-' %></td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+
+  <script>
+    const cycleData = <%= JSON.stringify(analysisResult.cycleTimes.map(item => item.value / 60)) %>;
+    const refData = <%= JSON.stringify(analysisResult.refereeTimes.map(item => item.value / 60)) %>;
+    const scheduleData = <%= JSON.stringify(analysisResult.scheduleDiffs.map(item => item.value / 60)) %>;
+
+    // Use match numbers as labels if available in the data items
+    const cycleLabels = <%= JSON.stringify(analysisResult.cycleTimes.map(item => item.match.match_number)) %>;
+    const refLabels = <%= JSON.stringify(analysisResult.refereeTimes.map(item => item.match.match_number)) %>;
+    const scheduleLabels = <%= JSON.stringify(analysisResult.scheduleDiffs.map(item => item.match.match_number)) %>;
+
+    new Chart(document.getElementById('cycleChart').getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: cycleLabels,
+        datasets: [{
+          label: 'Cycle Time (min)',
+          data: cycleData,
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: { scales: { y: { beginAtZero: true, ticks: { callback: value => value + 'm' } } } }
+    });
+
+    new Chart(document.getElementById('refereeChart').getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: refLabels,
+        datasets: [{
+          label: 'Referee Time (min)',
+          data: refData,
+          borderColor: 'rgba(255, 99, 132, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: { scales: { y: { beginAtZero: true, ticks: { callback: value => value + 'm' } } } }
+    });
+
+    new Chart(document.getElementById('scheduleChart').getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: scheduleLabels,
+        datasets: [{
+          label: 'Schedule Difference (min)',
+          data: scheduleData,
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: { scales: { y: { beginAtZero: true, ticks: { callback: value => value + 'm' } } } }
+    });
+  </script>
+</body>
+</html>

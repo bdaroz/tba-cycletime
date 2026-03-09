@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TBA Cycle Time Analysis</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    th { cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>TBA Cycle Time Analysis - <%= new Date().getFullYear() %> Season</h1>
+
+  <h2>Season Summary</h2>
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th>Min</th>
+        <th>Avg</th>
+        <th>Max</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Cycle Time</td>
+        <td>
+          <%= (seasonStats.cycle.min.value / 60).toFixed(2) %>m
+          <% if (seasonStats.cycle.min.context) { %>
+            <br>(<%= seasonStats.cycle.min.context.event.name %> - Match <%= seasonStats.cycle.min.context.match.match_number %>)
+          <% } %>
+        </td>
+        <td><%= (seasonStats.cycle.avg / 60).toFixed(2) %>m</td>
+        <td>
+          <%= (seasonStats.cycle.max.value / 60).toFixed(2) %>m
+          <% if (seasonStats.cycle.max.context) { %>
+            <br>(<%= seasonStats.cycle.max.context.event.name %> - Match <%= seasonStats.cycle.max.context.match.match_number %>)
+          <% } %>
+        </td>
+      </tr>
+      <tr>
+        <td>Referee Time</td>
+        <td>
+          <%= (seasonStats.ref.min.value / 60).toFixed(2) %>m
+          <% if (seasonStats.ref.min.context) { %>
+            <br>(<%= seasonStats.ref.min.context.event.name %> - Match <%= seasonStats.ref.min.context.match.match_number %>)
+          <% } %>
+        </td>
+        <td><%= (seasonStats.ref.avg / 60).toFixed(2) %>m</td>
+        <td>
+          <%= (seasonStats.ref.max.value / 60).toFixed(2) %>m
+          <% if (seasonStats.ref.max.context) { %>
+            <br>(<%= seasonStats.ref.max.context.event.name %> - Match <%= seasonStats.ref.max.context.match.match_number %>)
+          <% } %>
+        </td>
+      </tr>
+      <tr>
+        <td>Schedule Difference</td>
+        <td>
+          <%= (seasonStats.schedule.min.value / 60).toFixed(2) %>m
+          <% if (seasonStats.schedule.min.context) { %>
+            <br>(<%= seasonStats.schedule.min.context.event.name %> - Match <%= seasonStats.schedule.min.context.match.match_number %>)
+          <% } %>
+        </td>
+        <td><%= (seasonStats.schedule.avg / 60).toFixed(2) %>m</td>
+        <td>
+          <%= (seasonStats.schedule.max.value / 60).toFixed(2) %>m
+          <% if (seasonStats.schedule.max.context) { %>
+            <br>(<%= seasonStats.schedule.max.context.event.name %> - Match <%= seasonStats.schedule.max.context.match.match_number %>)
+          <% } %>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Eligible Events</h2>
+  <table class="events-table" id="eventsTable">
+    <thead>
+      <tr>
+        <th onclick="sortTable(0)">Event Name</th>
+        <th onclick="sortTable(1)">Avg Cycle Time (min)</th>
+        <th onclick="sortTable(2)">Avg Referee Time (min)</th>
+        <th onclick="sortTable(3)">Avg Schedule Diff (min)</th>
+        <th onclick="sortTable(4)">Daily Total Schedule Delta (min)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% events.forEach(event => { %>
+        <tr>
+          <td><a href="/event/<%= event.key %>"><%= event.name %></a></td>
+          <td><%= (event.avgCycleTime / 60).toFixed(2) %></td>
+          <td><%= (event.avgRefTime / 60).toFixed(2) %></td>
+          <td><%= (event.avgScheduleDiff / 60).toFixed(2) %></td>
+          <td><%= (event.dailyTotalScheduleDelta / 60).toFixed(2) %></td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+
+  <script>
+    function sortTable(n) {
+      var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+      table = document.getElementById("eventsTable");
+      switching = true;
+      // Set the sorting direction to ascending:
+      dir = "asc";
+      /* Make a loop that will continue until
+      no switching has been done: */
+      while (switching) {
+        // Start by saying: no switching is done:
+        switching = false;
+        rows = table.rows;
+        /* Loop through all table rows (except the
+        first, which contains table headers): */
+        for (i = 1; i < (rows.length - 1); i++) {
+          // Start by saying there should be no switching:
+          shouldSwitch = false;
+          /* Get the two elements you want to compare,
+          one from current row and one from the next: */
+          x = rows[i].getElementsByTagName("TD")[n];
+          y = rows[i + 1].getElementsByTagName("TD")[n];
+          /* Check if the two rows should switch place,
+          based on the direction, asc or desc: */
+
+          let xVal = x.innerText.toLowerCase();
+          let yVal = y.innerText.toLowerCase();
+
+          // Check if numeric
+          if (!isNaN(parseFloat(xVal)) && !isNaN(parseFloat(yVal))) {
+              xVal = parseFloat(xVal);
+              yVal = parseFloat(yVal);
+          }
+
+          if (dir == "asc") {
+            if (xVal > yVal) {
+              shouldSwitch = true;
+              break;
+            }
+          } else if (dir == "desc") {
+            if (xVal < yVal) {
+              shouldSwitch = true;
+              break;
+            }
+          }
+        }
+        if (shouldSwitch) {
+          /* If a switch has been marked, make the switch
+          and mark that a switch has been done: */
+          rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+          switching = true;
+          // Each time a switch is done, increase this count by 1:
+          switchcount ++;
+        } else {
+          /* If no switching has been done AND the direction is "asc",
+          set the direction to "desc" and run the while loop again. */
+          if (switchcount == 0 && dir == "asc") {
+            dir = "desc";
+            switching = true;
+          }
+        }
+      }
+    }
+
+    // Sort by Event Name (column 0) by default on load
+    window.onload = function() {
+        sortTable(0);
+    };
+  </script>
+</body>
+</html>
