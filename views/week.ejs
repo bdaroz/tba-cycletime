@@ -3,35 +3,78 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Events - TBA Cycle Time Analysis</title>
+  <title>TBA Cycle Time Analysis - Week <%= weekNumber + 1 %></title>
   <link rel="stylesheet" href="/css/style.css">
   <style>
     th { cursor: pointer; }
-    .week-links { margin-bottom: 20px; }
-    .week-links a { margin-right: 10px; }
   </style>
 </head>
 <body>
-  <h1>Events</h1>
+  <h1>TBA Cycle Time Analysis - <%= new Date().getFullYear() %> Season - Week <%= weekNumber + 1 %></h1>
 
-  <div class="week-links">
-    <strong>Filter by Week:</strong>
-    <a href="/">All</a>
-    <% // Assuming 'weeks' is passed to this view if coming from a week-filtered context, or we need to fetch it %>
-    <% // For now, let's assume we can get weeks from the cachedStats in app.js if needed, or just link to /week/:weekNumber %>
-    <% // Since this page is just a list of all eligible events, the week filter might be redundant here.
-       // However, if the user navigates to /events, they might want to filter.
-       // For simplicity, let's assume the /events route will also pass 'weeks' if it's available from cachedStats.
-       // If not, this part will need adjustment in app.js.
-       // For now, I'll just add a placeholder for weeks.
-    %>
-    <% if (typeof weeks !== 'undefined' && weeks.length > 0) { %>
-      <% weeks.forEach(week => { %>
-        <a href="/week/<%= week %>">Week <%= week + 1 %></a>
-      <% }); %>
-    <% } %>
-  </div>
+  <h2>Week <%= weekNumber + 1 %> Summary</h2>
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th>Min</th>
+        <th>Avg</th>
+        <th>Max</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Cycle Time</td>
+        <td>
+          <%= (weekStats.cycle.min.value / 60).toFixed(2) %>m
+          <% if (weekStats.cycle.min.context) { %>
+            <br>(<%= weekStats.cycle.min.context.event.name %> - Match <%= weekStats.cycle.min.context.match.match_number %>)
+          <% } %>
+        </td>
+        <td><%= (weekStats.cycle.avg / 60).toFixed(2) %>m</td>
+        <td>
+          <%= (weekStats.cycle.max.value / 60).toFixed(2) %>m
+          <% if (weekStats.cycle.max.context) { %>
+            <br>(<%= weekStats.cycle.max.context.event.name %> - Match <%= weekStats.cycle.max.context.match.match_number %>)
+          <% } %>
+        </td>
+      </tr>
+      <tr>
+        <td>Referee Time</td>
+        <td>
+          <%= (weekStats.ref.min.value / 60).toFixed(2) %>m
+          <% if (weekStats.ref.min.context) { %>
+            <br>(<%= weekStats.ref.min.context.event.name %> - Match <%= weekStats.ref.min.context.match.match_number %>)
+          <% } %>
+        </td>
+        <td><%= (weekStats.ref.avg / 60).toFixed(2) %>m</td>
+        <td>
+          <%= (weekStats.ref.max.value / 60).toFixed(2) %>m
+          <% if (weekStats.ref.max.context) { %>
+            <br>(<%= weekStats.ref.max.context.event.name %> - Match <%= weekStats.ref.max.context.match.match_number %>)
+          <% } %>
+        </td>
+      </tr>
+      <tr>
+        <td>Schedule Difference</td>
+        <td>
+          <%= (weekStats.schedule.min.value / 60).toFixed(2) %>m
+          <% if (weekStats.schedule.min.context) { %>
+            <br>(<%= weekStats.schedule.min.context.event.name %> - Match <%= weekStats.schedule.min.context.match.match_number %>)
+          <% } %>
+        </td>
+        <td><%= (weekStats.schedule.avg / 60).toFixed(2) %>m</td>
+        <td>
+          <%= (weekStats.schedule.max.value / 60).toFixed(2) %>m
+          <% if (weekStats.schedule.max.context) { %>
+            <br>(<%= weekStats.schedule.max.context.event.name %> - Match <%= weekStats.schedule.max.context.match.match_number %>)
+          <% } %>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
+  <h2>Eligible Events for Week <%= weekNumber + 1 %></h2>
   <table class="events-table" id="eventsTable">
     <thead>
       <tr>
