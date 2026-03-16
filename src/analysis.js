@@ -4,16 +4,18 @@ function analyzeMatches(matches) {
   // Filter for Qualification matches
   const qmMatches = matches.filter(m => m.comp_level === 'qm');
 
-  // Sort by match number
-  qmMatches.sort((a, b) => a.match_number - b.match_number);
+  // Filter for matches that have actually started and sort by actual_time
+  const playedMatches = qmMatches
+    .filter(m => m.actual_time)
+    .sort((a, b) => a.actual_time - b.actual_time);
 
   const cycleTimes = [];
   const refereeTimes = [];
   const scheduleDiffs = [];
 
-  for (let i = 0; i < qmMatches.length; i++) {
-    const match = qmMatches[i];
-    const prevMatch = i > 0 ? qmMatches[i - 1] : null;
+  for (let i = 0; i < playedMatches.length; i++) {
+    const match = playedMatches[i];
+    const prevMatch = i > 0 ? playedMatches[i - 1] : null;
 
     // Calculate schedule difference
     if (match.actual_time && match.time) {
@@ -45,8 +47,8 @@ function analyzeMatches(matches) {
     cycleTimes,
     refereeTimes,
     scheduleDiffs,
-    matchCount: qmMatches.length,
-    qmMatches // Return sorted matches for further analysis
+    matchCount: playedMatches.length,
+    qmMatches: playedMatches // Return sorted played matches
   };
 }
 
