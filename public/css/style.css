@@ -28,11 +28,23 @@ li {
   margin-bottom: 10px;
 }
 
-canvas {
+.chart-container {
+  position: relative;
+  height: 400px;
+  width: 100%;
+  margin-bottom: 20px;
   background-color: #1e1e1e;
   border-radius: 8px;
   padding: 10px;
-  margin-bottom: 20px;
+  box-sizing: border-box; /* Include padding in height/width calculation */
+}
+
+/* Remove default canvas styling that might conflict */
+canvas {
+  /* background-color: #1e1e1e; - Moved to container */
+  /* border-radius: 8px; - Moved to container */
+  /* padding: 10px; - Moved to container */
+  /* margin-bottom: 20px; - Moved to container */
 }
 
 table {
@@ -71,3 +83,6 @@ tr:hover {
 .events-table th, .events-table td {
   text-align: right;
 }
+
+.week-links { margin-bottom: 20px; }
+.week-links a { margin-right: 10px; }

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TBA Cycle Time Analysis - Week <%= weekNumber + 1 %></title>
   <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     th { cursor: pointer; }
   </style>
@@ -74,6 +75,11 @@
     </tbody>
   </table>
 
+  <h2>Event Cycle Time Distribution - Week <%= weekNumber + 1 %></h2>
+  <div class="chart-container">
+    <canvas id="cycleTimeHistogram"></canvas>
+  </div>
+
   <h2>Eligible Events for Week <%= weekNumber + 1 %></h2>
   <table class="events-table" id="eventsTable">
     <thead>
@@ -99,6 +105,9 @@
   </table>
 
   <script>
+    // Base font size for Chart.js
+    Chart.defaults.font.size = 12; // Default size, will be scaled
+
     function sortTable(n) {
       var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
       table = document.getElementById("eventsTable");
@@ -145,8 +154,87 @@
       }
     }
 
+    // Histogram generation
+    function generateHistogram() {
+        const eventData = <%- JSON.stringify(events.map(e => ({ avgCycleTime: e.avgCycleTime }))) %>;
+        const cycleTimesInMinutes = eventData.map(event => event.avgCycleTime / 60);
+
+        const buckets = {};
+        cycleTimesInMinutes.forEach(time => {
+            const bucket = Math.floor(time);
+            if (!buckets[bucket]) {
+                buckets[bucket] = 0;
+            }
+            buckets[bucket]++;
+        });
+
+        const sortedBuckets = Object.keys(buckets).sort((a, b) => parseInt(a) - parseInt(b));
+
+        const labels = sortedBuckets.map(bucket => `${bucket}-${parseInt(bucket) + 1} min`);
+        const data = sortedBuckets.map(bucket => buckets[bucket]);
+
+        new Chart(document.getElementById('cycleTimeHistogram').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '# of Events',
+                    data: data,
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  title: {
+                    display: true,
+                    text: 'Event Cycle Time Distribution - Week <%= weekNumber + 1 %>',
+                    font: {
+                      size: Chart.defaults.font.size * 2 // 100% increase for headers
+                    }
+                  }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Events',
+                            font: {
+                              size: Chart.defaults.font.size * 1.5 // 50% increase for axis labels
+                            }
+                        },
+                        ticks: {
+                          font: {
+                            size: Chart.defaults.font.size * 1.5 // 50% increase for axis ticks
+                          }
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Average Cycle Time',
+                            font: {
+                              size: Chart.defaults.font.size * 1.5 // 50% increase for axis labels
+                            }
+                        },
+                        ticks: {
+                          font: {
+                            size: Chart.defaults.font.size * 1.5 // 50% increase for axis ticks
+                          }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
     window.onload = function() {
         sortTable(0);
+        generateHistogram();
     };
   </script>
 </body>

@@ -76,9 +76,15 @@
   </table>
 
   <h2>Graphs</h2>
-  <canvas id="cycleChart"></canvas>
-  <canvas id="refereeChart"></canvas>
-  <canvas id="scheduleChart"></canvas>
+  <div class="chart-container">
+    <canvas id="cycleChart"></canvas>
+  </div>
+  <div class="chart-container">
+    <canvas id="refereeChart"></canvas>
+  </div>
+  <div class="chart-container">
+    <canvas id="scheduleChart"></canvas>
+  </div>
 
   <h2>Match Details</h2>
   <table class="events-table">
@@ -109,14 +115,59 @@
   </table>
 
   <script>
+    // Base font size for Chart.js
+    Chart.defaults.font.size = 12; // Default size, will be scaled
+
     const cycleData = <%= JSON.stringify(analysisResult.cycleTimes.map(item => item.value / 60)) %>;
     const refData = <%= JSON.stringify(analysisResult.refereeTimes.map(item => item.value / 60)) %>;
     const scheduleData = <%= JSON.stringify(analysisResult.scheduleDiffs.map(item => item.value / 60)) %>;
 
-    // Use match numbers as labels if available in the data items
     const cycleLabels = <%= JSON.stringify(analysisResult.cycleTimes.map(item => item.match.match_number)) %>;
     const refLabels = <%= JSON.stringify(analysisResult.refereeTimes.map(item => item.match.match_number)) %>;
     const scheduleLabels = <%= JSON.stringify(analysisResult.scheduleDiffs.map(item => item.match.match_number)) %>;
+
+    const chartOptions = {
+      responsive: true,
+      maintainAspectRatio: false, // Allow chart to resize freely
+      plugins: {
+        title: {
+          display: true,
+          font: {
+            size: Chart.defaults.font.size * 2 // 100% increase for headers
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: value => value + 'm',
+            font: {
+              size: Chart.defaults.font.size * 1.5 // 50% increase for axis ticks
+            }
+          },
+          title: {
+            display: true,
+            font: {
+              size: Chart.defaults.font.size * 1.5 // 50% increase for axis labels
+            }
+          }
+        },
+        x: {
+          ticks: {
+            font: {
+              size: Chart.defaults.font.size * 1.5 // 50% increase for axis ticks
+            }
+          },
+          title: {
+            display: true,
+            font: {
+              size: Chart.defaults.font.size * 1.5 // 50% increase for axis labels
+            }
+          }
+        }
+      }
+    };
 
     new Chart(document.getElementById('cycleChart').getContext('2d'), {
       type: 'line',
@@ -129,7 +180,33 @@
           borderWidth: 1
         }]
       },
-      options: { scales: { y: { beginAtZero: true, ticks: { callback: value => value + 'm' } } } }
+      options: {
+        ...chartOptions,
+        plugins: {
+          ...chartOptions.plugins,
+          title: {
+            ...chartOptions.plugins.title,
+            text: 'Cycle Time Over Matches'
+          }
+        },
+        scales: {
+          ...chartOptions.scales,
+          y: {
+            ...chartOptions.scales.y,
+            title: {
+              ...chartOptions.scales.y.title,
+              text: 'Cycle Time (min)'
+            }
+          },
+          x: {
+            ...chartOptions.scales.x,
+            title: {
+              ...chartOptions.scales.x.title,
+              text: 'Match Number'
+            }
+          }
+        }
+      }
     });
 
     new Chart(document.getElementById('refereeChart').getContext('2d'), {
@@ -143,7 +220,33 @@
           borderWidth: 1
         }]
       },
-      options: { scales: { y: { beginAtZero: true, ticks: { callback: value => value + 'm' } } } }
+      options: {
+        ...chartOptions,
+        plugins: {
+          ...chartOptions.plugins,
+          title: {
+            ...chartOptions.plugins.title,
+            text: 'Referee Time Over Matches'
+          }
+        },
+        scales: {
+          ...chartOptions.scales,
+          y: {
+            ...chartOptions.scales.y,
+            title: {
+              ...chartOptions.scales.y.title,
+              text: 'Referee Time (min)'
+            }
+          },
+          x: {
+            ...chartOptions.scales.x,
+            title: {
+              ...chartOptions.scales.x.title,
+              text: 'Match Number'
+            }
+          }
+        }
+      }
     });
 
     new Chart(document.getElementById('scheduleChart').getContext('2d'), {
@@ -157,7 +260,33 @@
           borderWidth: 1
         }]
       },
-      options: { scales: { y: { beginAtZero: true, ticks: { callback: value => value + 'm' } } } }
+      options: {
+        ...chartOptions,
+        plugins: {
+          ...chartOptions.plugins,
+          title: {
+            ...chartOptions.plugins.title,
+            text: 'Schedule Difference Over Matches'
+          }
+        },
+        scales: {
+          ...chartOptions.scales,
+          y: {
+            ...chartOptions.scales.y,
+            title: {
+              ...chartOptions.scales.y.title,
+              text: 'Schedule Difference (min)'
+            }
+          },
+          x: {
+            ...chartOptions.scales.x,
+            title: {
+              ...chartOptions.scales.x.title,
+              text: 'Match Number'
+            }
+          }
+        }
+      }
     });
   </script>
 </body>
